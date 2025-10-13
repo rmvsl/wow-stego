@@ -4,7 +4,9 @@ from numba import njit
 
 
 @njit
-def stc_embed(x, rho, m, H_hat, w, h):
+def stc_embed(x, rho, m, H_hat, h):
+    w = len(H_hat)
+    
     n = len(x)
     num_states = 2**h
 
@@ -37,15 +39,7 @@ def stc_embed(x, rho, m, H_hat, w, h):
         indm += 1
 
 
-    ## embedding_cost была в псевдокоде из оригинальной статьи и возвращалась вместе с y
-    ## После выполнения backward pass она показывает суммарную цену изменений.
-    ## Вообще, если у нас все картинки 512x512 как например принимает SRNet,
-    ## то имеет смысл взглянуть на корреляцию embedding_cost и того, насколько успешно SRNet распознала встраивание.
-    ## Однако при обычном использовании она не несет никакой полезной информации,
-    ## т.к. зависит намного больше от размеров изображения, чем от эффективности встраивания.
-
-    # embedding_cost = wght[0]
-
+    embedding_cost = wght[0]
     state = 0
     indx -= 1
     indm -= 1
@@ -60,22 +54,31 @@ def stc_embed(x, rho, m, H_hat, w, h):
             state ^= y[indx] * H_hat[j]
             indx -= 1
 
-    return y
+    return y, embedding_cost
 
 
-def stc_extract(y, H_hat):
-    y = np.array(y, dtype=np.uint8)
-    h, w = np.size(H_hat, 0), np.size(H_hat, 1)
+@njit
+def stc_extract(y, H_hat, h):
+    w = len(H_hat)
     blocks = len(y) // w
 
     syndrome = np.zeros(blocks + h, dtype=np.uint8)
 
     for b in range(blocks):
         col_start = b * w
-        col_end   = (b + 1) * w
-        y_block = y[col_start:col_end]
+        col_end = col_start + w
 
-        local = (H_hat @ y_block) % 2
-        syndrome[b:b+h] ^= np.uint8(local)
+        local = np.zeros(h, dtype=np.uint8)
+
+        for j in range(w):
+            if y[col_start + j] == 0:
+                continue
+            col_mask = H_hat[j]
+
+            for i in range(h):
+                local[i] ^= (col_mask >> i) & 1
+
+        for i in range(h):
+            syndrome[b + i] ^= local[i]
 
     return syndrome[:blocks]

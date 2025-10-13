@@ -27,7 +27,7 @@ def fftconvolve_mirror_padded(cover, kernel):
 
 
 def compute_rho(cover, p):
-    wetCost = 1e12
+    wetCost = 1e10
 
     XI = []
 
