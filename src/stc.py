@@ -6,23 +6,21 @@ from numba import njit
 @njit
 def stc_embed(x, rho, m, H_hat, h):
     w = len(H_hat)
-    
     n = len(x)
-    num_states = 2**h
 
     wght = np.array([0.0] + [np.inf] * (2**h - 1))
 
-    path = np.zeros((n, num_states), dtype=np.uint8)
+    path = np.zeros((n, 2**h), dtype=np.uint8)
 
     indx = 0
     indm = 0
 
-    newwght = np.empty(num_states, dtype=np.float64)
+    newwght = np.empty(2**h, dtype=np.float64)
     for i in range(n // w):
         for j in range(w):
             newwght.fill(np.inf)
 
-            for k in range(num_states):
+            for k in range(2**h):
                 w0 = wght[k] + x[indx] * rho[indx]
                 w1 = wght[k ^ H_hat[j]] + (1-x[indx])*rho[indx]
 

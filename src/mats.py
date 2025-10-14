@@ -1,4 +1,4 @@
-# Данные значения взяты отсюда:
+# Source:
 # https://dde.binghamton.edu/download/stego_algorithms/
 # S-UNIWARD.tar.gz -> S-UNIWARD_linux_make_v10/include/common.cpp
 

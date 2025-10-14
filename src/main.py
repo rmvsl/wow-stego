@@ -12,7 +12,7 @@ from stc import stc_embed, stc_extract
 
 
 
-# Сначала маленькие биты
+# Little-endian
 def u32_to_bits(n):
     if n < 0 or n > 2 ** 32 - 1:
         raise ValueError("Not u32")
@@ -65,7 +65,7 @@ if command == "embed":
 
     if k > blocks:
         print("Your message is too long for this image")
-        print(f"Max capacity is {blocks // 8} characters|bytes")
+        print(f"Max capacity is {blocks // 8} bytes")
         exit()
 
     y = x
@@ -91,7 +91,7 @@ elif command == "extract":
     sys.stdout.buffer.write(m_bytes)
 
 
-# Показать сколько можно уместить в картинку с текущими параметрами
+# Show how much data can fit into the given image
 elif command == "info":
     _, image, _ = prepare_image(image_path)
 
@@ -104,8 +104,7 @@ elif command == "info":
     print(f"Max secret message length: {blocks} bits = {blocks // 8} bytes")
 
 
-# Показать карту стоимостей для изображения
-# log нужен чтобы избавиться от огромного разрыва в значениях, который мешает визуализации
+# Visualize the cost map
 elif command == "cost_map":
     cover_m, _, _ = prepare_image(image_path)
 
@@ -116,10 +115,10 @@ elif command == "cost_map":
     plt.show()
 
 
-# Разница между cover и stego при встраивании конкретного сообщения
-# Серый — пиксель не изменился
-# Черный — пиксель уменьшился на 1
-# Белый — пиксель увеличился на 1
+# Difference between the cover and stego images when embedding the given message
+# Gray — pixel wasn't changed
+# Black — pixel was increased by 1
+# White — pixel was decreased by 1
 elif command == "xy_diff":
     cover_m, cover, x = prepare_image(image_path)
 
@@ -136,7 +135,7 @@ elif command == "xy_diff":
 
     if k > blocks:
         print("Your message is too long for this image")
-        print(f"Max capacity is {blocks // 8} bytes or characters")
+        print(f"Max capacity is {blocks // 8} bytes")
         exit()
 
     y = x.copy()
@@ -146,8 +145,7 @@ elif command == "xy_diff":
     plt.show()
 
 
-# Разница между cover и stego, но когда m имеет максимальную длину
-# То есть k = blocks
+# Difference between cover and stego for a maximum-length message
 elif command == "xy_diff_full":
     cover_m, cover, x = prepare_image(image_path)
 
@@ -164,8 +162,8 @@ elif command == "xy_diff_full":
 
 
 
-#########################################
-### Экспериментальные способы встраивания
+################
+### Experimental
 
 elif command == "embed_sorted":
     cover_m, cover, x = prepare_image(image_path)

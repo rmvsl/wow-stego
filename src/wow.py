@@ -36,6 +36,9 @@ def compute_rho(cover, p):
 
         xi = fftconvolve_mirror_padded(np.abs(r), np.rot90(np.abs(f), 2))
 
+        # fftconvolve may sometimes return small negative values, even though mathematically they shouldn't be there
+        xi[xi < 0] = 0
+
         if np.size(f, 0) % 2 == 0:
             xi = np.roll(xi, 1, axis=0)
         if np.size(f, 1) % 2 == 0:
@@ -43,7 +46,8 @@ def compute_rho(cover, p):
 
         XI.append(xi)
 
-    rho = (XI[0] ** p + XI[1] ** p + XI[2] ** p) ** (-1 / p)
+    with np.errstate(divide='ignore'):
+        rho = (XI[0] ** p + XI[1] ** p + XI[2] ** p) ** (-1 / p)
 
     rho[rho > wetCost] = wetCost
     rho[np.isnan(rho)] = wetCost
