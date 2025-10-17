@@ -63,13 +63,10 @@ def stc_extract(y, H_hat, h):
     syndrome = np.zeros(blocks + h, dtype=np.uint8)
 
     for b in range(blocks):
-        col_start = b * w
-        col_end = col_start + w
-
         local = np.zeros(h, dtype=np.uint8)
 
         for j in range(w):
-            if y[col_start + j] == 0:
+            if y[b * w + j] == 0:
                 continue
             col_mask = H_hat[j]
 
