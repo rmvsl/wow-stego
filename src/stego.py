@@ -21,6 +21,23 @@ def embed(path: str, message: bytes, w: int, h: int):
         raise RuntimeError("Only grayscale and RGB images are supported")
 
 
+def embed_ones(path: str, w: int, h: int):
+    img = iio.imread(path).astype(np.uint8)
+
+    if len(img.shape) == 2:
+        message = np.ones(img.ravel().size // w // 8 - 4, dtype=np.uint8)
+        return embed_gray(img, message, w, h)
+    elif img.shape[2] == 3:
+        message = np.ones(img.ravel().size // w // 8 - 4, dtype=np.uint8)
+        return embed_rgb(img, message, w, h)
+    elif img.shape[2] == 4:
+        message = np.ones(img[:, :, :3].ravel().size // 8 // w - 4, dtype=np.uint8)
+        stego_img, distortion = embed_rgb(img[:, :, :3], message, w, h)
+        return np.dstack((stego_img, img[:, :, 3])), distortion
+    else:
+        raise RuntimeError("Only grayscale and RGB images are supported")
+
+
 def embed_gray(cover_m, message: bytes, w: int, h: int):
     H_hat = get_matrix(w, h)
 
