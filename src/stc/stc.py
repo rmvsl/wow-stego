@@ -46,6 +46,7 @@ def stc_embed(x, rho, m, H_hat, h):
 
     for i in range(n // w):
         state = 2 * state + m[indm]
+        state &= (1 << h) - 1
         indm -= 1
         for j in range(w - 1, -1, -1):
             y[indx] = path[indx][state]
@@ -60,20 +61,16 @@ def stc_extract(y, H_hat, h):
     w = len(H_hat)
     blocks = len(y) // w
 
-    syndrome = np.zeros(blocks + h, dtype=np.uint8)
+    m = np.zeros(blocks, dtype=np.uint8)
+    syndrome = 0
 
     for b in range(blocks):
-        local = np.zeros(h, dtype=np.uint8)
-
         for j in range(w):
-            if y[b * w + j] == 0:
-                continue
-            col_mask = H_hat[j]
+            if y[b * w + j] == 1:
+                syndrome ^= H_hat[j]
+        
+        m[b] = syndrome & 1
+        
+        syndrome >>= 1
 
-            for i in range(h):
-                local[i] ^= (col_mask >> i) & 1
-
-        for i in range(h):
-            syndrome[b + i] ^= local[i]
-
-    return syndrome[:blocks]
+    return m

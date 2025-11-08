@@ -5,3 +5,5 @@ matplotlib
 imageio
 PyWavelets
 numba
+streamlit
+Pillow
